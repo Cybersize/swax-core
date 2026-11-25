@@ -1,0 +1,65 @@
+PASS	Each actual module loads in its own environment
+WARN	[SwaX Core] Unload the previous instance first.
+PASS	Loader rejects a duplicate live instance before reading modules
+PASS	Calling Runtime.Start twice does not stack connections
+PASS	Camera replacements update the explicit runtime context
+PASS	FOV score does not shrink with world distance
+PASS	Selection accepts inside/on-circle points and rejects outside points
+PASS	Pixel-distance calculation is translation invariant
+PASS	Smoothing retains the old 60Hz gain
+PASS	Smoothing progress is the same at 30,60,144 and 240 FPS
+PASS	Smoothing handles zero dt and snap gain
+PASS	Actual camera callback applies time-based yaw smoothing
+PASS	Mouse speed cap is measured per second, not per frame
+PASS	Mouse subpixel motion accumulates instead of being discarded
+PASS	Rotated 10x2x2 part has a 2x10x2 world box
+PASS	Arbitrary-rotation extents match all eight transformed corners
+PASS	Stationary projectile intercept
+PASS	Receding-target intercept fixes the audited underlead
+PASS	Approaching-target intercept
+PASS	Lateral-target intercept
+PASS	Uncatchable target has no invented intercept
+PASS	Degenerate linear intercept is handled
+PASS	Projectile solver chooses the first gravitational arc
+PASS	Moving-target gravitational intercept satisfies the trajectory equation
+PASS	Maximum-range tangent trajectory is not skipped
+PASS	Out-of-range gravity shot is rejected
+PASS	Invalid speeds and flight-horizon limits are safe
+PASS	Prediction uses the selected aim point and exact flight time
+PASS	Intercept solver handles near targets and invalid vectors
+PASS	120 constructed moving-target trajectories satisfy impact equations
+PASS	Skeleton follows actual animated bone endpoints
+PASS	Unknown disconnected rigs do not draw invented skeletons
+PASS	Nested R6 body parts still produce real segments
+PASS	Skeleton topology invalidates when a bone is streamed in or removed
+PASS	Skeleton drawing pool grows only to the real segment count
+PASS	Motor6D skeletons read live joint endpoints
+PASS	Cosmetic and weapon bones are excluded from skeleton topology
+PASS	Skeleton segment count is bounded for complex rigs
+PASS	Native UI starts without downloading code
+PASS	Core-only configuration
+WARN	[SwaX] Ignoring unknown configuration key: Missing
+PASS	Reject unknown settings
+PASS	Reject wrong setting types
+PASS	Reject nonfinite settings
+PASS	Clamp numeric settings
+WARN	[SwaX] Ignoring invalid AimMode: Invalid
+PASS	Validate enum settings
+PASS	Setting subscriptions can disconnect
+PASS	Maid cleanup is idempotent
+PASS	Maid supports nested cleanable resources
+PASS	Scheduler prevents duplicate names and callback overlap
+PASS	Stable lock retains its current valid target
+PASS	Focus loss releases lock
+PASS	Resolve head without a Humanoid
+PASS	Cached head reads its live position
+PASS	Custom head uses the animated bone
+PASS	Animated pose updates do not wait for a cache rescan
+PASS	Nil character is safe
+PASS	Reset restores every default
+PASS	Unload clears the UI, render binding and scheduler
+PASS	Unload disconnects all owned signal listeners
+PASS	Unload releases every Drawing object
+PASS	Missing local modules fail with cleanup and a useful path
+PASS	Late startup failure cleans render bindings and allocated visuals
+61 MODULAR TESTS PASSED (actual loader, isolated module environments, mock Roblox engine)

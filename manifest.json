@@ -1,0 +1,89 @@
+{
+  "edition": "core-local-modules-1",
+  "entry": "loader.luau",
+  "moduleCount": 15,
+  "networkRequired": false,
+  "bundledScript": false,
+  "modules": [
+    {
+      "path": "loader.luau",
+      "bytes": 1591,
+      "sha256": "31ac9b1631247848bc86f8b1bb1dadf2cd7a09af5b9c29b30081bf3ebed55a79"
+    },
+    {
+      "path": "modules/App.luau",
+      "bytes": 2763,
+      "sha256": "cdc00cdfdae8c08336b4997d9f790bc5ed3e6104e1319c694ff282ca3df40270"
+    },
+    {
+      "path": "modules/core/Config.luau",
+      "bytes": 5476,
+      "sha256": "a7199484740bbe19a5ef4ff599292395032b8ba0f1124307b218e7ea6edbecb5"
+    },
+    {
+      "path": "modules/core/Maid.luau",
+      "bytes": 1281,
+      "sha256": "37f2783b4c3a1b417837c9325918fb3d1b2cbf5a1d1455cf4c7c5136d71f38bc"
+    },
+    {
+      "path": "modules/core/Math.luau",
+      "bytes": 5738,
+      "sha256": "ef53dffa5cf0f59fb200ccc7d375d3a628a637fc5b2e19f33825f99db276de9a"
+    },
+    {
+      "path": "modules/core/Scheduler.luau",
+      "bytes": 1431,
+      "sha256": "1b27e2ed407af49dd5969d70f028e77e3e69a5c4b2c4e49b5ea76f1614530e0c"
+    },
+    {
+      "path": "modules/rig/Cache.luau",
+      "bytes": 3573,
+      "sha256": "9ae6247cc6906b78fa131346fa8eea579a63d1d1256ac9b16a4aeb93a0592c9a"
+    },
+    {
+      "path": "modules/rig/Geometry.luau",
+      "bytes": 29424,
+      "sha256": "06d9087a29b405d401f4a2def9d0e073f80cf2f889ff6514b2f54724a65c11b9"
+    },
+    {
+      "path": "modules/rig/Registry.luau",
+      "bytes": 22297,
+      "sha256": "20b53cbf1eb4a80fc16825d8aeeeac6728bcb4b5e8dc40e2fa56a709b24f3088"
+    },
+    {
+      "path": "modules/Runtime.luau",
+      "bytes": 3257,
+      "sha256": "207f03b49fc990a56a2fb09a13042a42ea77e048af85c2c3dc815c3277b4e56c"
+    },
+    {
+      "path": "modules/targeting/Aim.luau",
+      "bytes": 5307,
+      "sha256": "04a4983d2e0d42dd0b714b8b6f03248e7b827a89f516a6fd00432eb05ac01273"
+    },
+    {
+      "path": "modules/targeting/Lock.luau",
+      "bytes": 6330,
+      "sha256": "0bd05e4304ff03288d5beba86a359b17ecd9767828338be95c6aecf67a89297f"
+    },
+    {
+      "path": "modules/targeting/Selector.luau",
+      "bytes": 9802,
+      "sha256": "9ecf67b04c98b36526401c72947990d20d80a457a9cd6ae4eedd498e49f180dc"
+    },
+    {
+      "path": "modules/targeting/Visibility.luau",
+      "bytes": 7274,
+      "sha256": "65cc0061abefdb04213dce30a31574b4e5d8ef087d11eb9aff355b84c3ca60d4"
+    },
+    {
+      "path": "modules/ui/Panel.luau",
+      "bytes": 10934,
+      "sha256": "685355a3f21975f550bdef318fa5f5b1504b61228e60d85febf944f226600678"
+    },
+    {
+      "path": "modules/visuals/ESP.luau",
+      "bytes": 46481,
+      "sha256": "07e609fad689b3bf17293a81223a8d96a56d3ff17e057ea737c115a9d7aa1de2"
+    }
+  ]
+}

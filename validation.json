@@ -1,0 +1,9 @@
+{
+  "compilePassed": true,
+  "compiler": "Luau 0.748",
+  "moduleCount": 15,
+  "isolatedModuleTestsPassed": 61,
+  "constructedProjectileCases": 120,
+  "unexpectedModuleGlobals": [],
+  "liveGameTested": false
+}
