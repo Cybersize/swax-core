@@ -5,6 +5,7 @@ import argparse, subprocess, tempfile
 ROOT=Path(__file__).resolve().parent
 parser=argparse.ArgumentParser()
 parser.add_argument('--luau',required=True,help='Path to the official Luau CLI')
+parser.add_argument('--github',action='store_true',help='Test the GitHub loader with mocked HTTP')
 args=parser.parse_args()
 
 def quote(value):
@@ -13,7 +14,8 @@ def quote(value):
     return '['+equals+'[\n'+value+']'+equals+']'
 
 prefix=(ROOT/'tests/mock_engine.luau').read_text(encoding='utf8')
-files={'swax-core/loader.luau':(ROOT/'loader.luau').read_text(encoding='utf8')}
+entry='github-loader.luau' if args.github else 'loader.luau'
+files={'swax-core/loader.luau':(ROOT/entry).read_text(encoding='utf8')}
 files.update({'swax-core/'+p.relative_to(ROOT).as_posix():p.read_text(encoding='utf8') for p in (ROOT/'modules').rglob('*.luau')})
 filesystem='\nlocal files={\n'+',\n'.join('[ '+quote(path)+' ]='+quote(text) for path,text in sorted(files.items()))+'\n}\n'
 harness=r'''
@@ -80,6 +82,18 @@ check("Camera replacements update the explicit runtime context",function()
     replacement:Destroy()
 end)
 '''
+if args.github:
+    harness=harness.replace('engine.readfile=function(path)', 'engine.readfile=function(path) error("Remote loader must not read local files");end\nlocal unusedReadfile=function(path)',1)
+    harness=harness.replace('local base=getfenv()', '''
+function methods:HttpGet(url)
+    local prefix="https://raw.githubusercontent.com/Cybersize/swax-core/eea4eb7343edf2a6b83caedc00f3c28b0aecafac/modules/"
+    assert(url:sub(1,#prefix)==prefix,"Module URL must be revision-pinned")
+    local path="swax-core/modules/"..url:sub(#prefix+1)
+    reads[path]=(reads[path] or 0)+1
+    return assert(files[path],"File not found: "..path)
+end
+local base=getfenv()
+''',1)
 math_tests=(ROOT/'tests/math_regressions.luau').read_text(encoding='utf8')
 assertions=(ROOT/'tests/assertions.luau').read_text(encoding='utf8')
 tail=r'''

@@ -1,14 +1,24 @@
 {
-  "edition": "core-local-modules-1",
-  "entry": "loader.luau",
+  "edition": "core-github-modules-1",
+  "entry": "github-loader.luau",
+  "localEntry": "loader.luau",
   "moduleCount": 15,
-  "networkRequired": false,
+  "networkRequired": {
+    "github-loader.luau": true,
+    "loader.luau": false
+  },
+  "payloadRevision": "eea4eb7343edf2a6b83caedc00f3c28b0aecafac",
   "bundledScript": false,
   "modules": [
     {
       "path": "loader.luau",
       "bytes": 1591,
       "sha256": "31ac9b1631247848bc86f8b1bb1dadf2cd7a09af5b9c29b30081bf3ebed55a79"
+    },
+    {
+      "path": "github-loader.luau",
+      "bytes": 1563,
+      "sha256": "9e6e13bd1ffecf6b0cf88c79da3de3e618b3c58f23f12a91508e14d4543001a7"
     },
     {
       "path": "modules/App.luau",

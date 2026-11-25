@@ -5,5 +5,7 @@
   "isolatedModuleTestsPassed": 61,
   "constructedProjectileCases": 120,
   "unexpectedModuleGlobals": [],
-  "liveGameTested": false
+  "liveGameTested": false,
+  "githubLoaderMockTestsPassed": 61,
+  "localLoaderMockTestsPassed": 61
 }

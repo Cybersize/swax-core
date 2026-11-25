@@ -1,9 +1,19 @@
 SWAX CORE — LOCAL MODULE EDITION
 ===============================
 
-One entry point. Fifteen real modules. No generated single-file bundle.
-The loader reads local files only; it does not fetch or execute HTTP downloads.
-Storing this project on GitHub does not change that local-loader behavior.
+Two entry-point options. Fifteen real modules. No generated single-file bundle.
+Choose an entry point:
+- github-loader.luau downloads the modules from public GitHub URLs.
+- loader.luau reads locally installed modules, without network downloads.
+
+RUN FROM GITHUB
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Cybersize/swax-core/main/github-loader.luau"))()
+
+No local module installation or key is required for the GitHub entry point.
+Module URLs are pinned to revision eea4eb7343edf2a6b83caedc00f3c28b0aecafac
+so one launch cannot mix different module versions. To release changed modules,
+update REVISION in github-loader.luau after committing those module changes.
+This is a public-source distribution, not a private/key-protected deployment.
 
 RUN LOCALLY
 1. Copy this complete swax-core folder into your executor's workspace.
@@ -27,7 +37,8 @@ Dependencies are explicit factory parameters; App.luau does all composition.
 The only shared context holds engine services, camera, lifetime and cleanup.
 
 MODULE MAP
-loader.luau                   The only file you run
+github-loader.luau            GitHub entry point (HTTP module downloads)
+loader.luau                   Alternative local-files entry point
 modules/App.luau              Creates and connects all components
 modules/Runtime.luau          Input, frame scheduling, camera replacement, unload
 
@@ -71,6 +82,7 @@ is not a per-vertex bounding-box calculation. Settings are session-only.
 
 TEST
     python test.py --luau PATH_TO_LUAU_EXE
+    python test.py --luau PATH_TO_LUAU_EXE --github
 
 The tests execute the actual loader against an in-memory filesystem and load
 every actual module in its own environment. Unexpected global reads/writes
