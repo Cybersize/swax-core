@@ -1,13 +1,13 @@
 {
-  "edition": "core-strict-team-modules-3",
+  "edition": "core-auto-projectile-modules-4",
   "entry": "github-loader.luau",
   "localEntry": "loader.luau",
-  "moduleCount": 16,
+  "moduleCount": 17,
   "networkRequired": {
     "github-loader.luau": true,
     "loader.luau": true
   },
-  "payloadRevision": "02e1bcc0cd5745a572395ca2e1c4efbcf64197b7",
+  "payloadRevision": "dfc37f69cb3d7e9781b93b5e3a4d6cb93532aa5c",
   "bundledScript": false,
   "modules": [
     {
@@ -18,17 +18,17 @@
     {
       "path": "github-loader.luau",
       "bytes": 1563,
-      "sha256": "dff9af0d949c082508a71d4906e633c8e913fcb3fae0a947ff1980b259c3d479"
+      "sha256": "f603d1343fe133e4fbffb55ab93a11381a55217db50f6eabcd0579f50523bd26"
     },
     {
       "path": "modules/App.luau",
-      "bytes": 2857,
-      "sha256": "675096e14987adb4d01abe20f1f4bcf2e6bf3b311a76ee9e2756dae3e987cf4c"
+      "bytes": 3024,
+      "sha256": "4f64c7e500a83866b2eb25f394bafab48265471fd1aa308c004311307c1e633a"
     },
     {
       "path": "modules/core/Config.luau",
-      "bytes": 5476,
-      "sha256": "a7199484740bbe19a5ef4ff599292395032b8ba0f1124307b218e7ea6edbecb5"
+      "bytes": 5512,
+      "sha256": "d8f035aadec37577319bd06164489bbb1bae56360a9edd8667f212ae36806e19"
     },
     {
       "path": "modules/core/Maid.luau",
@@ -82,8 +82,8 @@
     },
     {
       "path": "modules/targeting/Selector.luau",
-      "bytes": 9810,
-      "sha256": "8f35c138d6055cd32d153813009eb0fbb7f5f57b3c06e566c5ce0f73cb13ec5b"
+      "bytes": 9823,
+      "sha256": "3262540d407716024500c550a1a6275283853db7672bd4fa518c4024928f5870"
     },
     {
       "path": "modules/targeting/Visibility.luau",
@@ -92,13 +92,18 @@
     },
     {
       "path": "modules/ui/Panel.luau",
-      "bytes": 14816,
-      "sha256": "8325c483d9416bcfee88aa1195c62d6ee0d610bd6811bd0da70d6ea63bb325ee"
+      "bytes": 16502,
+      "sha256": "808809571aedb68918374ecdfbb381671902f642dde086bc788e067458def155"
     },
     {
       "path": "modules/visuals/ESP.luau",
       "bytes": 46675,
       "sha256": "3c12c8e08d0265acbbeddbaec3b4830b614be09a2ee19805c4345c67d16ca5b1"
+    },
+    {
+      "path": "modules/weapons/Scanner.luau",
+      "bytes": 8899,
+      "sha256": "6f7db241bd6e030babaa17eaf0238f0af7d81680f32f4d395da2eb5e6412a1e4"
     }
   ],
   "localOfflineSupported": true,
@@ -115,6 +120,15 @@
     "mode": "confirmed-enemy-only when enabled",
     "unknownPolicy": "skip",
     "gameAdapterSupported": true,
+    "liveGameTested": false
+  },
+  "weaponScanner": {
+    "autoDefault": true,
+    "scope": "equipped Tool only",
+    "source": "attributes and ValueObjects",
+    "fallback": "saved manual speed",
+    "executesGunScripts": false,
+    "detectsCustomGravity": false,
     "liveGameTested": false
   }
 }
