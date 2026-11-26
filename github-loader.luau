@@ -1,5 +1,5 @@
 -- Public GitHub bootstrap. Module downloads are pinned to one audited commit.
-local REVISION="eea4eb7343edf2a6b83caedc00f3c28b0aecafac"
+local REVISION="e74bb7a34404fd79377c7876742957983ca04617"
 local BASE="https://raw.githubusercontent.com/Cybersize/swax-core/"..REVISION.."/modules/"
 assert(type(loadstring)=="function","This loader needs loadstring support")
 

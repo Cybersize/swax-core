@@ -1,13 +1,13 @@
 {
-  "edition": "core-github-modules-1",
+  "edition": "core-crispy-modules-2",
   "entry": "github-loader.luau",
   "localEntry": "loader.luau",
   "moduleCount": 15,
   "networkRequired": {
     "github-loader.luau": true,
-    "loader.luau": false
+    "loader.luau": true
   },
-  "payloadRevision": "eea4eb7343edf2a6b83caedc00f3c28b0aecafac",
+  "payloadRevision": "e74bb7a34404fd79377c7876742957983ca04617",
   "bundledScript": false,
   "modules": [
     {
@@ -18,12 +18,12 @@
     {
       "path": "github-loader.luau",
       "bytes": 1563,
-      "sha256": "9e6e13bd1ffecf6b0cf88c79da3de3e618b3c58f23f12a91508e14d4543001a7"
+      "sha256": "41c94e537a91670e16092f49b777ffcfeb59041c1ca55e09d2ff9e7782c72ec1"
     },
     {
       "path": "modules/App.luau",
-      "bytes": 2763,
-      "sha256": "cdc00cdfdae8c08336b4997d9f790bc5ed3e6104e1319c694ff282ca3df40270"
+      "bytes": 2777,
+      "sha256": "0cb14883d3c1be1c7b8a0d333540673a050cab79b1c5b92c3dff5c7d8c16f603"
     },
     {
       "path": "modules/core/Config.luau",
@@ -87,13 +87,23 @@
     },
     {
       "path": "modules/ui/Panel.luau",
-      "bytes": 10934,
-      "sha256": "685355a3f21975f550bdef318fa5f5b1504b61228e60d85febf944f226600678"
+      "bytes": 14701,
+      "sha256": "024f5fd689f2cd2741c1570a9dd9847f9504507bb9993e8f1fa4517b6ab172a6"
     },
     {
       "path": "modules/visuals/ESP.luau",
       "bytes": 46481,
       "sha256": "07e609fad689b3bf17293a81223a8d96a56d3ff17e057ea737c115a9d7aa1de2"
     }
-  ]
+  ],
+  "localOfflineSupported": true,
+  "networkNote": "Local modules need no network; provide compatible CrispyLib locally or inject it for fully offline use.",
+  "uiDependency": {
+    "name": "CrispyLib",
+    "version": "3.3.0",
+    "url": "https://github.com/Cybersize/Crispylib/releases/download/v3.3.0/CrispyLib.lua",
+    "referenceSha256": "3e105c9fdbab2ea061d2a89e6d3eac06f15a9ed95113fda56eace866a1d346ca",
+    "runtimeHashEnforced": false,
+    "bundled": false
+  }
 }
