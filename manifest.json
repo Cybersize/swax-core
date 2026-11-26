@@ -1,29 +1,29 @@
 {
-  "edition": "core-crispy-modules-2",
+  "edition": "core-strict-team-modules-3",
   "entry": "github-loader.luau",
   "localEntry": "loader.luau",
-  "moduleCount": 15,
+  "moduleCount": 16,
   "networkRequired": {
     "github-loader.luau": true,
     "loader.luau": true
   },
-  "payloadRevision": "e74bb7a34404fd79377c7876742957983ca04617",
+  "payloadRevision": "02e1bcc0cd5745a572395ca2e1c4efbcf64197b7",
   "bundledScript": false,
   "modules": [
     {
       "path": "loader.luau",
-      "bytes": 1591,
-      "sha256": "31ac9b1631247848bc86f8b1bb1dadf2cd7a09af5b9c29b30081bf3ebed55a79"
+      "bytes": 1588,
+      "sha256": "b9f81250fead8dcc3cad3e7d7e849f00eea3dcce202511a19c6f3653e4b1c2cc"
     },
     {
       "path": "github-loader.luau",
       "bytes": 1563,
-      "sha256": "41c94e537a91670e16092f49b777ffcfeb59041c1ca55e09d2ff9e7782c72ec1"
+      "sha256": "dff9af0d949c082508a71d4906e633c8e913fcb3fae0a947ff1980b259c3d479"
     },
     {
       "path": "modules/App.luau",
-      "bytes": 2777,
-      "sha256": "0cb14883d3c1be1c7b8a0d333540673a050cab79b1c5b92c3dff5c7d8c16f603"
+      "bytes": 2857,
+      "sha256": "675096e14987adb4d01abe20f1f4bcf2e6bf3b311a76ee9e2756dae3e987cf4c"
     },
     {
       "path": "modules/core/Config.luau",
@@ -57,28 +57,33 @@
     },
     {
       "path": "modules/rig/Registry.luau",
-      "bytes": 22297,
-      "sha256": "20b53cbf1eb4a80fc16825d8aeeeac6728bcb4b5e8dc40e2fa56a709b24f3088"
+      "bytes": 21916,
+      "sha256": "df44bad38c37485d781a45c189b2a89c7790f644665f32d0498d4eb93adcc085"
+    },
+    {
+      "path": "modules/rig/Teams.luau",
+      "bytes": 6805,
+      "sha256": "9ffbba0da963f1cf7ec0f4e10d8501cdca31d8997f7eb90c661641157f38fd97"
     },
     {
       "path": "modules/Runtime.luau",
-      "bytes": 3257,
-      "sha256": "207f03b49fc990a56a2fb09a13042a42ea77e048af85c2c3dc815c3277b4e56c"
+      "bytes": 3421,
+      "sha256": "1635265b562ae5cd448a85572b6cf0c35b03c0c52eeeed7976b45581abf36fc6"
     },
     {
       "path": "modules/targeting/Aim.luau",
-      "bytes": 5307,
-      "sha256": "04a4983d2e0d42dd0b714b8b6f03248e7b827a89f516a6fd00432eb05ac01273"
+      "bytes": 5918,
+      "sha256": "24cbecd21616871255d4c1221b5a996dcdc5c9a7ac43c743847b7c344a298d20"
     },
     {
       "path": "modules/targeting/Lock.luau",
-      "bytes": 6330,
-      "sha256": "0bd05e4304ff03288d5beba86a359b17ecd9767828338be95c6aecf67a89297f"
+      "bytes": 6492,
+      "sha256": "4500a1d7e07e76b626f787d0c67f3a4457b084bf3e9140b69cf01198a9ae3bd6"
     },
     {
       "path": "modules/targeting/Selector.luau",
-      "bytes": 9802,
-      "sha256": "9ecf67b04c98b36526401c72947990d20d80a457a9cd6ae4eedd498e49f180dc"
+      "bytes": 9810,
+      "sha256": "8f35c138d6055cd32d153813009eb0fbb7f5f57b3c06e566c5ce0f73cb13ec5b"
     },
     {
       "path": "modules/targeting/Visibility.luau",
@@ -87,13 +92,13 @@
     },
     {
       "path": "modules/ui/Panel.luau",
-      "bytes": 14701,
-      "sha256": "024f5fd689f2cd2741c1570a9dd9847f9504507bb9993e8f1fa4517b6ab172a6"
+      "bytes": 14816,
+      "sha256": "8325c483d9416bcfee88aa1195c62d6ee0d610bd6811bd0da70d6ea63bb325ee"
     },
     {
       "path": "modules/visuals/ESP.luau",
-      "bytes": 46481,
-      "sha256": "07e609fad689b3bf17293a81223a8d96a56d3ff17e057ea737c115a9d7aa1de2"
+      "bytes": 46675,
+      "sha256": "3c12c8e08d0265acbbeddbaec3b4830b614be09a2ee19805c4345c67d16ca5b1"
     }
   ],
   "localOfflineSupported": true,
@@ -105,5 +110,11 @@
     "referenceSha256": "3e105c9fdbab2ea061d2a89e6d3eac06f15a9ed95113fda56eace866a1d346ca",
     "runtimeHashEnforced": false,
     "bundled": false
+  },
+  "teamCheck": {
+    "mode": "confirmed-enemy-only when enabled",
+    "unknownPolicy": "skip",
+    "gameAdapterSupported": true,
+    "liveGameTested": false
   }
 }
