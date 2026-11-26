@@ -100,7 +100,8 @@ return function(ctx, ConfigService, Runtime, CharacterRegistry, Scheduler, LockC
         toggle(aim, "Enabled", "Enabled", "a_en")
         toggle(aim, "Lock Players", "LockOnPlayers", "a_plr")
         toggle(aim, "Lock NPCs", "LockOnNPCs", "a_npc")
-        toggle(aim, "Team Check", "TeamCheck", "a_team")
+        toggle(aim, "Team Check", "TeamCheck", "a_team",
+            "Strict: confirmed enemies only. Missing/conflicting teams are skipped; name-tag colors are ignored.")
         toggle(aim, "Wall Check", "WallCheck", "a_wall")
         toggle(aim, "High-Quality Visibility", "HighQualityVisibility", "a_wallhq",
             "Uses extra rays per sampled character. Higher CPU cost.")

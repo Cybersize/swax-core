@@ -40,6 +40,9 @@ return function(ctx, ConfigService, CharacterRegistry, VisibilityService, LockCo
     ctx.maid:Give(ConfigService.OnChanged("Enabled", function(enabled)
         if not enabled then LockController.SetActive(false); AimController.ClearTarget() end
     end))
+    ctx.maid:Give(ConfigService.OnChanged("TeamCheck", function(enabled)
+        if enabled then AimController.ClearTarget(); LockController.Update() end
+    end))
 
     Scheduler.Add("Lock", 1/30, LockController.Update)
     Scheduler.Add("VisibilityPriority", 1/20, function()

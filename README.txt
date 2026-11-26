@@ -1,7 +1,7 @@
 SWAX CORE — ORIGINAL CRISPYLIB UI
 ================================
 
-Two entry-point options. Fifteen real modules. No generated single-file bundle.
+Two entry-point options. Sixteen real modules. No generated single-file bundle.
 Choose an entry point:
 - github-loader.luau downloads the modules from public GitHub URLs.
 - loader.luau reads locally installed modules. Its UI dependency still downloads
@@ -38,7 +38,7 @@ Resolution: compatible getgenv().CrispyLib or _G.CrispyLib, pinned release, then
 CRISPYLIB_PATH / CrispyLib.lua / CrispyLib.refactored.lua local fallbacks.
 A compatible instance needs the Config.OnApplied API. A dependency failure
 produces a startup error and cleanup; it does not silently start headless.
-The library is external, not included in the fifteen core modules.
+The library is external, not included in the sixteen core modules.
 
 IMPORTANT
 Opening loader.luau by itself is not enough; the module files must also be
@@ -65,6 +65,7 @@ modules/core/Scheduler.luau   Named, non-overlapping scheduled jobs
 
 modules/rig/Cache.luau        Per-character instance/geometry cache
 modules/rig/Registry.luau     Player/NPC discovery and lifetime tracking
+modules/rig/Teams.luau        Strict live relationship resolution and adapter API
 modules/rig/Geometry.luau     Aim points, animated bones, bounds and skeletons
 
 modules/targeting/Visibility.luau   Cached line-of-sight checks
@@ -81,6 +82,45 @@ checks, smoothing, prediction, projectile/drop correction, FOV/crosshair,
 boxes, names, health, distance, tracers, skeleton, chams and profile UI.
 Removed: healing, medicine changes, movement modifications, silent aim,
 triggerbot, night vision, loadout inspection and teleport/rejoin.
+
+UPGRADED TEAM CHECK
+Enable Team Check in Aimbot to target confirmed enemies only. The preference
+still defaults to off; this update does not silently change your saved toggle.
+When on, Ally, Self and Unknown targets are excluded, including NPCs with no
+team information. Unknown targets are displayed in neutral grey by ESP/chams.
+
+The resolver reads live Roblox Team object identity only for verified character
+owners with both Neutral flags false. It also checks exact replicated fields:
+TeamId, TeamID, FactionId, FactionID, Team and Faction. Supported sources are
+player/character attributes and direct StringValue, IntValue, NumberValue or
+ObjectValue children. Field names/types must match. Empty/malformed values,
+missing counterparts, conflicting sources or stale owner mappings are Unknown.
+It does not infer teams from name-tag colours, clothing, names or parent folders.
+
+No relationship cache is used. Changes are re-read during selection, aim update
+and immediately before camera/mouse output, so an old lock cannot bypass the
+check until the next selection tick. Unknown drop reasons are included in the
+lock log. The original CrispyLib interface is preserved.
+
+Custom team IDs are conventions, not proof of a game's combat/alliance rules.
+For games with alliances, special NPC hostility, FFA, spectator rules or another
+schema, supply an explicit non-yielding adapter after running either loader:
+    local runtime = <run either loader and keep its returned value>
+    runtime.Components.teams.SetAdapter(function(localPlayer, targetPlayer,
+                                                 localCharacter, targetCharacter)
+        -- Read THIS GAME's verified relationship data here.
+        -- targetPlayer may be nil for custom rigs/NPCs.
+        return "Unknown", "game_rules_not_integrated"
+    end)
+Return exactly Ally, Enemy or Unknown, optionally followed by a diagnostic
+reason. Errors/invalid results fail closed to Unknown. SetAdapter(nil) restores
+the built-in resolver. This is deliberately not a universal 100% guarantee:
+custom game semantics and client replication delays still need validation.
+
+API references:
+https://create.roblox.com/docs/reference/engine/classes/Player
+https://create.roblox.com/docs/reference/engine/classes/Team
+https://create.roblox.com/docs/reference/engine/classes/Instance
 
 PROJECTILE SETTINGS / MATH
 Projectile Mode starts OFF. Turn it ON and enter the weapon's actual projectile
@@ -123,9 +163,11 @@ TEST
 
 The tests execute the actual loader against an in-memory filesystem and load
 every actual module in its own environment. Unexpected global reads/writes
-are rejected. Eighty tests pass for each entry point, including 120 constructed
+are rejected. 111 tests pass for each entry point, including 120 constructed
 projectile trajectories, UI-to-projectile speed/distance/drop checks, profile
 sync, dependency failure cleanup, math regressions and resource release.
+Thirty-one of these tests cover relationship evidence, conflicts, neutrality,
+owner/respawn changes, adapters, filtering and final camera/mouse output gates.
 The Luau files compile with the official Luau 0.748 CLI.
 The external CrispyLib release also compiles. UI tests use an interface double;
 these are not live Roblox/executor, weapon-accuracy or visual rendering tests.

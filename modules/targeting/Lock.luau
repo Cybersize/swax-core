@@ -73,6 +73,12 @@ return function(ctx, ConfigService, CharacterRegistry, GeometryService, Visibili
         local inGame = false
         pcall(function() inGame = t.char:IsDescendantOf(game) end)
         if not inGame then return "registry_removed" end
+        if ConfigService.Get("TeamCheck") then
+            local relation, reason = CharacterRegistry.GetRelationship(t.char)
+            if relation ~= "Enemy" then
+                return relation == "Ally" and "team_filtered" or ("team_unknown:" .. tostring(reason))
+            end
+        end
         local hum = t.hum
         if hum and hum.Health <= 0 then return "dead" end
         local cf = GeometryService.GetCharBBox(t.char)
@@ -90,9 +96,6 @@ return function(ctx, ConfigService, CharacterRegistry, GeometryService, Visibili
         if TargetSelector.GetSelectionScoreSquared(t.char) > fov * fov then return "out_of_fov" end
         if ConfigService.Get("WallCheck") and VisibilityService.IsBehindWall(t.char) then
             return "behind_wall"
-        end
-        if CharacterRegistry.IsTeammate(t.char) and ConfigService.Get("TeamCheck") then
-            return "team_filtered"
         end
         return "target_invalid"
     end

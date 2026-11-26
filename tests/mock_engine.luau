@@ -133,7 +133,10 @@ methods.FindFirstChildOfClass=methods.FindFirstChildWhichIsA
 function methods:IsDescendantOf(parent) local p=self.Parent;while p do if p==parent then return true end;p=p.Parent end;return false end
 function methods:GetFullName() return self.Parent and self.Parent:GetFullName().."."..self.Name or self.Name end
 function methods:GetPropertyChangedSignal(n) self.props.signals=self.props.signals or {};self.props.signals[n]=self.props.signals[n] or signal();return self.props.signals[n] end
-function methods:GetAttribute() return nil end
+function methods:GetAttribute(key) return self.props.attributes and self.props.attributes[key] end
+function methods:SetAttribute(key,value)
+    self.props.attributes=self.props.attributes or {};self.props.attributes[key]=value
+end
 function methods:Destroy()
     if self.props.destroyed then return end;self.props.destroyed=true
     self.Destroying:Fire()
@@ -154,10 +157,16 @@ end
 local workspace=game:GetService("Workspace")
 workspace.CurrentCamera=Instance.new("Camera");workspace.CurrentCamera.ViewportSize=Vector2.new(1280,720);workspace.CurrentCamera.CFrame=CFrame.new()
 local player=Instance.new("Player");player.Name="Local";player.DisplayName="Local";player.UserId=1
+player.Parent=game:GetService("Players");player.Neutral=true
 game:GetService("Players").LocalPlayer=player
 local pg=Instance.new("PlayerGui");pg.Name="PlayerGui";pg.Parent=player
-function methods:GetPlayers() return {player} end
-function methods:GetPlayerFromCharacter() return nil end
+function methods:GetPlayers()
+    local list={};for _,p in ipairs(game:GetService("Players"):GetChildren()) do if p:IsA("Player") then list[#list+1]=p end end
+    return list
+end
+function methods:GetPlayerFromCharacter(char)
+    for _,p in ipairs(self:GetPlayers()) do if p.Character==char then return p end end
+end
 local RaycastParams={new=function() return {} end}
 local passed=0
 local function check(name,fn) fn();passed+=1;print("PASS",name) end

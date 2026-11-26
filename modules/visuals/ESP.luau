@@ -187,13 +187,15 @@ return function(ctx, ConfigService, CharacterRegistry, GeometryService, Visibili
     local _updaterTextDt = 0
     local _updaterPruneDt = 0
 
-    local function _resolveEspColor(entry, isTeammate)
-        if entry.isNPC then return Color3.fromRGB(255, 80, 80) end
+    local function _resolveEspColor(entry, isTeammate, relationship)
+        if relationship == "Unknown" then return Color3.fromRGB(160, 170, 185) end
         if isTeammate then return Color3.fromRGB(80, 255, 80) end
+        if entry.isNPC then return Color3.fromRGB(255, 80, 80) end
         return ConfigService.Get("Accent")
     end
 
-    local function _resolveChamsColor(entry, char, isTeammate)
+    local function _resolveChamsColor(entry, char, isTeammate, relationship)
+        if relationship == "Unknown" then return Color3.fromRGB(160, 170, 185) end
         if isTeammate then return Color3.fromRGB(60, 130, 255) end
         if entry.isNPC then return Color3.fromRGB(255, 120, 40) end
         return ConfigService.Get("ChamsColor")
@@ -361,12 +363,12 @@ return function(ctx, ConfigService, CharacterRegistry, GeometryService, Visibili
         showBox, showName, showHealth, showDistance
     )
         local char = entry.char
-        local color = state.col or _resolveEspColor(entry, state.isTeammate)
+        local color = state.col or _resolveEspColor(entry, state.isTeammate, state.relationship)
         local styleDirty = visual._styleVersion ~= _visualStyleVersion
 
         if visual.Highlight then
             local behind = state.behind == true
-            local fillColor = _resolveChamsColor(entry, char, state.isTeammate)
+            local fillColor = _resolveChamsColor(entry, char, state.isTeammate, state.relationship)
             pcall(function()
                 if styleDirty or visual._fillColor ~= fillColor then
                     visual.Highlight.FillColor = fillColor
@@ -483,11 +485,10 @@ return function(ctx, ConfigService, CharacterRegistry, GeometryService, Visibili
             _espState[char] = state
         end
 
-        -- Share one teammate lookup across ESP/chams colours in this update.
-        -- Refresh each pass so team and name-tag colour changes remain immediate.
-        state.isTeammate = (not entry.isNPC or ConfigService.Get("Chams"))
-            and CharacterRegistry.IsTeammate(char) or false
-        local col = _resolveEspColor(entry, state.isTeammate)
+        -- Share the live relationship across ESP/chams; Unknown is not Enemy.
+        state.relationship = CharacterRegistry.GetRelationship(char)
+        state.isTeammate = state.relationship == "Ally" or state.relationship == "Self"
+        local col = _resolveEspColor(entry, state.isTeammate, state.relationship)
         if col ~= state.col then state.col = col end
 
         -- Visibility / behind-wall (reads cached result — no raycast here). Ignore

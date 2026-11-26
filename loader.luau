@@ -1,5 +1,5 @@
 -- Copy the entire swax-core folder into your executor's workspace, then run
--- this loader. Files remain separate: no HTTP requests or bundled script.
+-- this loader. Core modules stay local; the UI may download CrispyLib.
 local ROOT="swax-core"
 assert(type(readfile)=="function","This loader needs local readfile support")
 assert(type(loadstring)=="function","This loader needs loadstring support")

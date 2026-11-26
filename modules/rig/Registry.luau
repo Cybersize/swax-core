@@ -1,5 +1,5 @@
 -- rig/Registry: isolated factory; dependencies are explicit parameters.
-return function(ctx, ConfigService, Maid, RigCache)
+return function(ctx, ConfigService, Maid, RigCache, TeamService)
     local Players=ctx.services.Players
     local RunService=ctx.services.RunService
     local Workspace=ctx.services.Workspace
@@ -93,27 +93,17 @@ return function(ctx, ConfigService, Maid, RigCache)
 
     CharacterRegistry.IsLocalChar = IsLocalChar
 
-    -- Teammate detection (PF-native + standard Roblox fallback)
-    local TEAMMATE_COLOR = Color3.fromRGB(0, 255, 234)
-    local function IsTeammate(char)
-        if not char then return false end
-        local nameTagGui = char:FindFirstChild("NameTagGui", true)
-        if nameTagGui then
-            local playerTag = nameTagGui:FindFirstChild("PlayerTag")
-            if playerTag then
-                return playerTag.Visible == true and playerTag.TextColor3 == TEAMMATE_COLOR
-            end
-        end
+    function CharacterRegistry.GetRelationship(char)
         local data = _chars[char]
-        if data and data.player then
-            local theirTeam = data.player.Team
-            local localTeam = LocalPlayer.Team
-            return theirTeam ~= nil and localTeam ~= nil and theirTeam == localTeam
-        end
-        return false
+        return TeamService.Resolve(char, data and data.player)
     end
-
-    CharacterRegistry.IsTeammate = IsTeammate
+    function CharacterRegistry.IsTeammate(char)
+        local relation = CharacterRegistry.GetRelationship(char)
+        return relation == "Ally" or relation == "Self"
+    end
+    function CharacterRegistry.IsEnemy(char)
+        return CharacterRegistry.GetRelationship(char) == "Enemy"
+    end
 
     -- Multi-strategy owner resolver
     local function ResolveOwner(char)

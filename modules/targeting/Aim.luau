@@ -1,5 +1,5 @@
 -- targeting/Aim: isolated factory; dependencies are explicit parameters.
-return function(ctx, ConfigService, LockController, TargetSelector, CoreMath)
+return function(ctx, ConfigService, LockController, TargetSelector, CoreMath, CharacterRegistry)
     local RunService=ctx.services.RunService
     local UserInputService=ctx.services.UserInputService
     local AimController = {}
@@ -18,6 +18,15 @@ return function(ctx, ConfigService, LockController, TargetSelector, CoreMath)
         _mouseResidualX, _mouseResidualY = 0, 0
     end
 
+    local function teamBlocked(locked)
+        if not ConfigService.Get("TeamCheck") then return false end
+        local relation, reason = CharacterRegistry.GetRelationship(locked.char)
+        if relation == "Enemy" then return false end
+        LockController.DropTarget(relation == "Ally" and "team_filtered" or ("team_unknown:" .. tostring(reason)))
+        AimController.ClearTarget()
+        return true
+    end
+
 
     -- Run at Last priority so our aim fires AFTER any weapon/ADS camera script.
     -- The selected mode controls only aim output; both modes share prediction/lock.
@@ -29,6 +38,8 @@ return function(ctx, ConfigService, LockController, TargetSelector, CoreMath)
             AimController.ClearTarget()
             return
         end
+        -- Recheck at actual output time, not only in the 30Hz selection job.
+        if teamBlocked(locked) then return end
         local cam = ctx.camera
         if not cam then return end
         pcall(function()
@@ -88,6 +99,7 @@ return function(ctx, ConfigService, LockController, TargetSelector, CoreMath)
             AimController.ClearTarget()
             return
         end
+        if teamBlocked(locked) then return end
         -- Hit chance gates this aim update. A skipped update must not keep steering
         -- toward a cached position from an earlier frame or target.
         if ConfigService.Get("HitChance") < 100 then

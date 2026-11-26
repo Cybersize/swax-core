@@ -115,8 +115,8 @@ return function(ctx, ConfigService, CharacterRegistry, GeometryService, Visibili
         if data then
             if data.isNPC   and not ConfigService.Get("LockOnNPCs")     then return false, "team_filtered" end
             if not data.isNPC and not ConfigService.Get("LockOnPlayers") then return false, "team_filtered" end
-            if ConfigService.Get("TeamCheck") and CharacterRegistry.IsTeammate(entry.char) then return false, "team_filtered" end
         end
+        if ConfigService.Get("TeamCheck") and not CharacterRegistry.IsEnemy(entry.char) then return false, "team_filtered_or_unknown" end
         if ConfigService.Get("WallCheck") and VisibilityService.IsBehindWall(entry.char) then
             return false, "behind_wall"
         end
