@@ -1,7 +1,7 @@
 SWAX CORE — ORIGINAL CRISPYLIB UI
 ================================
 
-Two entry-point options. Sixteen real modules. No generated single-file bundle.
+Two entry-point options. Seventeen real modules. No generated single-file bundle.
 Choose an entry point:
 - github-loader.luau downloads the modules from public GitHub URLs.
 - loader.luau reads locally installed modules. Its UI dependency still downloads
@@ -38,7 +38,7 @@ Resolution: compatible getgenv().CrispyLib or _G.CrispyLib, pinned release, then
 CRISPYLIB_PATH / CrispyLib.lua / CrispyLib.refactored.lua local fallbacks.
 A compatible instance needs the Config.OnApplied API. A dependency failure
 produces a startup error and cleanup; it does not silently start headless.
-The library is external, not included in the sixteen core modules.
+The library is external, not included in the seventeen core modules.
 
 IMPORTANT
 Opening loader.luau by itself is not enough; the module files must also be
@@ -75,6 +75,7 @@ modules/targeting/Aim.luau          Camera/mouse output only
 
 modules/visuals/ESP.luau      Private visual caches and rendering
 modules/ui/Panel.luau         Original CrispyLib interface and config bridge
+modules/weapons/Scanner.luau  Read-only equipped-gun speed config discovery
 
 KEEP / REMOVE
 Kept: aim/lock-on, player/NPC support, custom head/bone targeting, team/wall
@@ -123,10 +124,45 @@ https://create.roblox.com/docs/reference/engine/classes/Team
 https://create.roblox.com/docs/reference/engine/classes/Instance
 
 PROJECTILE SETTINGS / MATH
-Projectile Mode starts OFF. Turn it ON and enter the weapon's actual projectile
-speed in studs per second. Speed is not automatically discovered from the game.
+Projectile Mode starts OFF. Turn it ON and equip a gun. Auto Projectile Speed
+defaults ON and searches readable equipped-Tool config. The manual speed slider
+is a fallback, not a value that detection overwrites. The status card shows Auto,
+Manual or Fallback, the effective speed, and the selected field/fallback reason.
 Extra Lead Time (s) is a separate optional target-motion time offset, not speed.
 Set it to zero when checking projectile travel-time prediction by itself.
+
+AUTOMATIC SPEED SEARCH
+Only the equipped Tool under LocalPlayer.Character is scanned. Supported field
+names are BulletSpeed, ProjectileSpeed, MuzzleVelocity and BulletVelocity, with
+case/underscore/hyphen variants. Attributes and numeric ValueObjects in the
+Tool/config tree are supported. Generic Speed, WalkSpeed and TracerSpeed are
+ignored. No Backpack weapon, other player's gun or arbitrary world object is
+chosen as a substitute for the equipped weapon.
+
+The scanner updates every 0.5 seconds while Auto and Projectile Mode are on,
+invalidates changed config values and discards old detections on weapon swaps,
+unequip or respawn. Traversal is bounded to 512 instances / 24 levels / 64
+attributes per instance. Agreeing duplicates are accepted; conflicts, invalid
+values, multiple equipped Tools or partial/capped searches use manual fallback.
+Positive finite detected speeds up to 1,000,000 are supported without clamping
+them to the manual slider's maximum.
+
+Recognized fields without unit metadata assume studs/second by convention, not
+by measuring the weapon. Explicit SpeedUnits, field-specific *Units or Units
+metadata must state supported studs/second units; m/s or conflicting units are
+not silently converted. Matching a config name does not prove the game uses
+that value as its active firing speed. Attachments, modes or custom units may
+need game-specific integration. Verify the status rather than trusting a guess.
+
+Use Scan Equipped Gun for an immediate scan and console output of the full
+source path / fallback reason. Runtime API: Components.weapons.GetStatus(),
+GetEffectiveSpeed(), Scan() and Describe(). Detection never writes the gun's
+configuration, executes/requires/decompiles ModuleScripts, reads script source,
+measures cosmetic tracers, or turns Projectile Mode on automatically. Module-only,
+server-only and custom non-Tool weapon systems need game-specific integration.
+The fallback default (500) is not a claim about your gun's actual speed.
+This feature detects speed only; it does not discover weapon-specific gravity,
+drag, damage falloff or hitscan behavior. Drop still uses Workspace.Gravity.
 
 For a stationary target with no gravity, time = distance / projectile speed.
 For a moving target the solver finds the earliest supported nonnegative t:
@@ -163,11 +199,13 @@ TEST
 
 The tests execute the actual loader against an in-memory filesystem and load
 every actual module in its own environment. Unexpected global reads/writes
-are rejected. 111 tests pass for each entry point, including 120 constructed
+are rejected. 147 tests pass for each entry point, including 120 constructed
 projectile trajectories, UI-to-projectile speed/distance/drop checks, profile
 sync, dependency failure cleanup, math regressions and resource release.
 Thirty-one of these tests cover relationship evidence, conflicts, neutrality,
 owner/respawn changes, adapters, filtering and final camera/mouse output gates.
+Thirty-six cover gun discovery, limits, units, conflicts, lifecycle, UI/profile
+sync and actual selector integration with automatic rather than manual speed.
 The Luau files compile with the official Luau 0.748 CLI.
 The external CrispyLib release also compiles. UI tests use an interface double;
 these are not live Roblox/executor, weapon-accuracy or visual rendering tests.

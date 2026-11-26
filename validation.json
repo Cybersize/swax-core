@@ -1,18 +1,20 @@
 {
   "compilePassed": true,
   "compiler": "Luau 0.748",
-  "moduleCount": 16,
-  "isolatedModuleTestsPassed": 111,
+  "moduleCount": 17,
+  "isolatedModuleTestsPassed": 147,
   "constructedProjectileCases": 120,
   "unexpectedModuleGlobals": [],
   "liveGameTested": false,
-  "githubLoaderMockTestsPassed": 111,
-  "localLoaderMockTestsPassed": 111,
+  "githubLoaderMockTestsPassed": 147,
+  "localLoaderMockTestsPassed": 147,
   "crispyLibVersion": "3.3.0",
   "crispyLibCompilePassed": true,
   "uiTestMethod": "mock interface, not live rendering",
   "uiLiveRendered": false,
   "projectileWeaponLiveTested": false,
   "teamRegressionTestsPassed": 31,
-  "teamLiveGameTested": false
+  "teamLiveGameTested": false,
+  "weaponScannerRegressionTestsPassed": 36,
+  "weaponScannerLiveGameTested": false
 }

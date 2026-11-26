@@ -97,17 +97,22 @@ meta.__newindex=function(o,k,v)
         o.props.Parent=v
         if v then table.insert(v.children,o) end
     else
+        local previous=o.props[k]
         o.props[k]=v
         if (o.props.ClassName=="Part" or o.props.ClassName=="MeshPart") and k=="Position" then local cf=o.props.CFrame
             o.props.CFrame=cf and CFrame.fromMatrix(v,cf.RightVector,cf.UpVector,cf.BackVector) or CFrame.new(v)
         end
         if (o.props.ClassName=="Part" or o.props.ClassName=="MeshPart") and k=="CFrame" then o.props.Position=v.Position end
+        if previous~=v then
+            if o.props.signals and o.props.signals[k] then o.props.signals[k]:Fire() end
+            if k=="Value" and o.props.Changed then o.props.Changed:Fire(v) end
+        end
     end
 end
 local Instance={}
 function Instance.new(class)
     local o=setmetatable({kind="Instance",children={},props={ClassName=class,Name=class}},meta)
-    for _,key in ipairs({"Changed","AncestryChanged","DescendantAdded","DescendantRemoving","ChildAdded","ChildRemoved",
+    for _,key in ipairs({"Changed","AttributeChanged","AncestryChanged","DescendantAdded","DescendantRemoving","ChildAdded","ChildRemoved",
         "Destroying","Activated","FocusLost","InputBegan","InputEnded","InputChanged","CharacterAdded","CharacterRemoving",
         "PlayerAdded","PlayerRemoving","Heartbeat","RenderStepped","WindowFocusReleased"}) do o[key]=signal() end
     if class=="Part" then o.Position=Vector3.zero;o.Size=Vector3.one;o.Transparency=0;o.CFrame=CFrame.new() end
@@ -116,6 +121,7 @@ end
 function methods:IsA(c)
     return self.ClassName==c or c=="Instance" or (c=="BasePart" and (self.ClassName=="Part" or self.ClassName=="MeshPart"))
         or (c=="Attachment" and self.ClassName=="Bone") or (c=="Accoutrement" and self.ClassName=="Accessory")
+        or (c=="ValueBase" and self.ClassName:sub(-5)=="Value")
 end
 function methods:GetChildren() return table.clone(self.children) end
 function methods:GetDescendants()
@@ -134,8 +140,11 @@ function methods:IsDescendantOf(parent) local p=self.Parent;while p do if p==par
 function methods:GetFullName() return self.Parent and self.Parent:GetFullName().."."..self.Name or self.Name end
 function methods:GetPropertyChangedSignal(n) self.props.signals=self.props.signals or {};self.props.signals[n]=self.props.signals[n] or signal();return self.props.signals[n] end
 function methods:GetAttribute(key) return self.props.attributes and self.props.attributes[key] end
+function methods:GetAttributes() return table.clone(self.props.attributes or {}) end
 function methods:SetAttribute(key,value)
+    local previous=self:GetAttribute(key)
     self.props.attributes=self.props.attributes or {};self.props.attributes[key]=value
+    if previous~=value then self.AttributeChanged:Fire(key) end
 end
 function methods:Destroy()
     if self.props.destroyed then return end;self.props.destroyed=true

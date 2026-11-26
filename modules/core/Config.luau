@@ -22,6 +22,7 @@ return function(ctx)
         -- Prediction
         Prediction        = 0.02,
         BallisticSpeed    = 0,
+        AutoProjectileSpeed = true,
         DropCompensation  = false,
 
         -- FOV display

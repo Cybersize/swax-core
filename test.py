@@ -74,7 +74,7 @@ check("Each actual module loads in its own environment",function()
     for path in pairs(files) do
         if path~="swax-core/loader.luau" then assert(reads[path]==1,path);count+=1 end
     end
-    assert(count==16,"Expected all 16 independent modules")
+    assert(count==17,"Expected all 17 independent modules")
 end)
 check("Loader rejects a duplicate live instance before reading modules",function()
     local count=0;for _,n in pairs(reads) do count+=n end
@@ -110,6 +110,7 @@ end
 math_tests=(ROOT/'tests/math_regressions.luau').read_text(encoding='utf8')
 ui_tests=(ROOT/'tests/ui_regressions.luau').read_text(encoding='utf8')
 team_tests=(ROOT/'tests/team_regressions.luau').read_text(encoding='utf8')
+weapon_tests=(ROOT/'tests/weapon_regressions.luau').read_text(encoding='utf8')
 assertions=(ROOT/'tests/assertions.luau').read_text(encoding='utf8')
 tail=r'''
 check("Unload releases every Drawing object",function()
@@ -195,5 +196,5 @@ print(string.format("%d MODULAR TESTS PASSED (actual loader, isolated module env
 '''
 with tempfile.TemporaryDirectory(prefix='swax-modules-') as folder:
     path=Path(folder)/'test_modules.luau'
-    path.write_text(prefix+filesystem+harness+'\n'+math_tests+'\n'+ui_tests+'\n'+team_tests+'\n'+assertions+'\n'+tail,encoding='utf8')
+    path.write_text(prefix+filesystem+harness+'\n'+math_tests+'\n'+ui_tests+'\n'+team_tests+'\n'+weapon_tests+'\n'+assertions+'\n'+tail,encoding='utf8')
     subprocess.run([args.luau,str(path)],check=True)

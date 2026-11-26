@@ -81,8 +81,10 @@ local function newMockCrispy()
             end
             function tab:AddButton(buttonSpec) self.buttons[buttonSpec.Name]=buttonSpec.Callback end
             function tab:AddDataCard(cardSpec)
-                local card={value=cardSpec.Value}
+                local card={value=cardSpec.Value,description=cardSpec.Description,subtext=cardSpec.Subtext}
                 function card:Set(value) self.value=value end
+                function card:SetDescription(value) self.description=value end
+                function card:SetSubtext(value) self.subtext=value end
                 return card
             end
             self._tabs[#self._tabs+1]=tab

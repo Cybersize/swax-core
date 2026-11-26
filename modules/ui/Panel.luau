@@ -1,5 +1,5 @@
 -- Original CrispyLib interface, wired only to the modular core.
-return function(ctx, ConfigService, Runtime, CharacterRegistry, Scheduler, LockController, VisualDebug)
+return function(ctx, ConfigService, Runtime, CharacterRegistry, Scheduler, LockController, VisualDebug, WeaponScanner)
     local CoreUI = {}
     local RELEASE = "https://github.com/Cybersize/Crispylib/releases/download/v3.3.0/CrispyLib.lua"
 
@@ -137,8 +137,10 @@ return function(ctx, ConfigService, Runtime, CharacterRegistry, Scheduler, LockC
             Description="Solves distance, target velocity and projectile travel time. Off = no speed-based lead.",
             Default=ConfigService.Get("BallisticSpeed") > 0,
             Callback=function(value) applyProjectile(value, CrispyLib.State.Get("a_bspd")) end})
-        local speedControl = aim:AddSlider({Name="Projectile Speed (st/s)", Flag="a_bspd",
-            Description="Actual weapon speed in studs/second; not auto-detected. Drop uses Workspace.Gravity.",
+        toggle(aim, "Auto Projectile Speed", "AutoProjectileSpeed", "a_bauto",
+            "Read equipped gun config. Missing/conflicting values use the manual fallback below."):DependsOn(projectileToggle)
+        local speedControl = aim:AddSlider({Name="Manual / Fallback Speed (st/s)", Flag="a_bspd",
+            Description="Used when Auto is off or no unambiguous readable gun config is found. Drop uses Workspace.Gravity.",
             Min=1, Max=ConfigService.Ranges.BallisticSpeed[2], Step=1,
             Default=ConfigService.Get("BallisticSpeed") > 0 and ConfigService.Get("BallisticSpeed") or 500,
             Callback=function(value) applyProjectile(CrispyLib.State.Get("a_balena"), value) end})
@@ -147,6 +149,31 @@ return function(ctx, ConfigService, Runtime, CharacterRegistry, Scheduler, LockC
             projectileToggle:Set(value > 0, true)
             if value > 0 then speedControl:Set(value, true) end
         end))
+        CoreUI.ProjectileStatusCard = aim:AddDataCard({Name="Projectile Speed", Value="Off",
+            Description="Enable Projectile Mode", Subtext="studs / second"})
+        function CoreUI.UpdateProjectileStatus()
+            local info = WeaponScanner.GetStatus()
+            local card = CoreUI.ProjectileStatusCard
+            if info.mode == "off" then
+                card:Set("Off"); card:SetSubtext("studs / second"); card:SetDescription("Enable Projectile Mode")
+            else
+                card:Set(string.format("%g", info.effectiveSpeed))
+                if info.mode == "auto" then
+                    card:SetSubtext("Auto config • studs/s")
+                    card:SetDescription(info.tool.Name .. " / " .. info.field)
+                elseif info.mode == "manual" then
+                    card:SetSubtext("Manual • studs/s"); card:SetDescription("Automatic search disabled")
+                else
+                    card:SetSubtext("Fallback • studs/s"); card:SetDescription(info.reason:gsub("_", " "))
+                end
+            end
+        end
+        aim:AddButton({Name="Scan Equipped Gun", Callback=function()
+            WeaponScanner.Scan(); CoreUI.UpdateProjectileStatus()
+            print("[SwaX Core] " .. WeaponScanner.Describe()) -- full source path / fallback reason
+        end})
+        Scheduler.Add("UI.Projectile",0.5,CoreUI.UpdateProjectileStatus)
+        CoreUI.UpdateProjectileStatus()
         aim:AddDivider({Label="Aim Settings"})
         dropdown(aim, "Aim Mode", "AimMode", "a_aimmode")
         slider(aim, "Smooth X", "SmoothX", "a_sx")

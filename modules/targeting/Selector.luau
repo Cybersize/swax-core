@@ -1,5 +1,5 @@
 -- targeting/Selector: isolated factory; dependencies are explicit parameters.
-return function(ctx, ConfigService, CharacterRegistry, GeometryService, VisibilityService, CoreMath)
+return function(ctx, ConfigService, CharacterRegistry, GeometryService, VisibilityService, CoreMath, WeaponScanner)
     local Workspace=ctx.services.Workspace
     local LocalPlayer=ctx.localPlayer
     local TargetSelector = {}
@@ -88,7 +88,7 @@ return function(ctx, ConfigService, CharacterRegistry, GeometryService, Visibili
             local prediction = ConfigService.Get("Prediction")
             prediction = finiteNumber(prediction) and math.clamp(prediction, 0, 0.5) or 0
             local pos = base + velocity * prediction
-            local speed = ConfigService.Get("BallisticSpeed")
+            local speed = WeaponScanner.GetEffectiveSpeed()
             if finiteNumber(speed) and speed > 0 then
                 local origin = ctx.camera and ctx.camera.CFrame.Position
                 if not finiteVector(origin) then return nil end
