@@ -30,7 +30,7 @@ return function(import)
         parts.visuals=import("visuals/ESP")(ctx,parts.config,parts.registry,parts.geometry,parts.visibility)
         parts.scheduler=import("core/Scheduler")(ctx)
         runtime=import("Runtime")(ctx,parts.config,parts.registry,parts.visibility,parts.lock,parts.aim,parts.visuals,parts.scheduler)
-        parts.ui=import("ui/Panel")(ctx,parts.config,runtime,parts.registry,parts.scheduler,parts.lock)
+        parts.ui=import("ui/Panel")(ctx,parts.config,runtime,parts.registry,parts.scheduler,parts.lock,parts.visuals)
         runtime.Components=parts
         runtime.Context=ctx
         parts.ui.Init()

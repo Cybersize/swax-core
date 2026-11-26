@@ -1,5 +1,7 @@
 flush()
-check("Native UI starts without downloading code",function() assert(Runtime.GUI and Runtime.GUI.Parent==pg) end)
+check("Original UI starts with the provided CrispyLib instance",function()
+    assert(Runtime.GUI and Runtime.GUI.Parent==pg and libraryRequests==0)
+end)
 check("Core-only configuration",function() assert(ConfigService.Get("AutoHeal")==nil and ConfigService.Get("SpeedHack")==nil) end)
 check("Reject unknown settings",function() assert(not ConfigService.Set("Missing",true)) end)
 check("Reject wrong setting types",function() assert(not ConfigService.Set("FOV","invalid")) end)

@@ -1,16 +1,17 @@
-SWAX CORE — LOCAL MODULE EDITION
-===============================
+SWAX CORE — ORIGINAL CRISPYLIB UI
+================================
 
 Two entry-point options. Fifteen real modules. No generated single-file bundle.
 Choose an entry point:
 - github-loader.luau downloads the modules from public GitHub URLs.
-- loader.luau reads locally installed modules, without network downloads.
+- loader.luau reads locally installed modules. Its UI dependency still downloads
+  by default unless you provide a compatible CrispyLib instance or local file.
 
 RUN FROM GITHUB
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Cybersize/swax-core/main/github-loader.luau"))()
 
 No local module installation or key is required for the GitHub entry point.
-Module URLs are pinned to revision eea4eb7343edf2a6b83caedc00f3c28b0aecafac
+Module URLs are pinned to the payloadRevision recorded in manifest.json
 so one launch cannot mix different module versions. To release changed modules,
 update REVISION in github-loader.luau after committing those module changes.
 This is a public-source distribution, not a private/key-protected deployment.
@@ -23,6 +24,21 @@ RUN LOCALLY
    The loader's ROOT setting defaults to swax-core relative to the executor
    workspace. Change ROOT only if you deliberately use a different location.
 4. Right-click holds lock. Right Shift shows/hides controls. End unloads.
+
+ORIGINAL UI
+The original SwaX CrispyLib window, sidebar, loading screen and 820x545 layout
+are restored, with Aimbot, FOV, ESP and Config tabs only. Color pickers, sliders,
+dropdowns, profile UI and two-way setting synchronization are retained.
+Core profiles use ConfigName SwaXCore, separate from old all-features profiles.
+Save/load and 30-second autosave need supported executor filesystem APIs.
+
+The UI uses CrispyLib v3.3.0 from this version-specific release URL:
+https://github.com/Cybersize/Crispylib/releases/download/v3.3.0/CrispyLib.lua
+Resolution: compatible getgenv().CrispyLib or _G.CrispyLib, pinned release, then
+CRISPYLIB_PATH / CrispyLib.lua / CrispyLib.refactored.lua local fallbacks.
+A compatible instance needs the Config.OnApplied API. A dependency failure
+produces a startup error and cleanup; it does not silently start headless.
+The library is external, not included in the fifteen core modules.
 
 IMPORTANT
 Opening loader.luau by itself is not enough; the module files must also be
@@ -57,14 +73,35 @@ modules/targeting/Lock.luau         Sticky-lock state machine
 modules/targeting/Aim.luau          Camera/mouse output only
 
 modules/visuals/ESP.luau      Private visual caches and rendering
-modules/ui/Panel.luau         Native Aim / Visuals controls
+modules/ui/Panel.luau         Original CrispyLib interface and config bridge
 
 KEEP / REMOVE
 Kept: aim/lock-on, player/NPC support, custom head/bone targeting, team/wall
 checks, smoothing, prediction, projectile/drop correction, FOV/crosshair,
-boxes, names, health, distance, tracers, skeleton and chams.
+boxes, names, health, distance, tracers, skeleton, chams and profile UI.
 Removed: healing, medicine changes, movement modifications, silent aim,
-triggerbot, night vision, loadout inspection, teleport/rejoin and profile UI.
+triggerbot, night vision, loadout inspection and teleport/rejoin.
+
+PROJECTILE SETTINGS / MATH
+Projectile Mode starts OFF. Turn it ON and enter the weapon's actual projectile
+speed in studs per second. Speed is not automatically discovered from the game.
+Extra Lead Time (s) is a separate optional target-motion time offset, not speed.
+Set it to zero when checking projectile travel-time prediction by itself.
+
+For a stationary target with no gravity, time = distance / projectile speed.
+For a moving target the solver finds the earliest supported nonnegative t:
+    |r + v*t - 0.5*a*t*t| = speed*t
+r is target displacement from the camera after Extra Lead Time, v is target
+velocity, and a is projectile acceleration. The requested aim point is:
+    target + v*(extraLead + t) - 0.5*a*t*t
+Without drop, the equation is quadratic; with drop it becomes quartic.
+Drop Compensation uses a=(0,-Workspace.Gravity,0). Faster shots need less lead;
+farther shots generally need more. A stationary target without drop produces no
+visible offset, which is expected. No reachable solution means no aim output.
+
+This is a mathematical model, not a game-specific weapon integration. Custom
+weapon gravity, different muzzle origin, inherited shooter velocity, drag,
+acceleration, server latency and hitscan weapons are not automatically handled.
 
 THE FIVE MATH FIXES ARE PRESERVED
 - Pixel-radius FOV selection matches the visible circle.
@@ -78,7 +115,7 @@ Mouse output needs mousemoverel; Drawing-based visuals need the Drawing API.
 Projectile prediction assumes constant target velocity, camera-origin firing,
 constant gravity, no drag, and a maximum 30-second flight horizon. It cannot
 account for unknown game/server projectile behavior. Skinned mesh deformation
-is not a per-vertex bounding-box calculation. Settings are session-only.
+is not a per-vertex bounding-box calculation.
 
 TEST
     python test.py --luau PATH_TO_LUAU_EXE
@@ -86,10 +123,12 @@ TEST
 
 The tests execute the actual loader against an in-memory filesystem and load
 every actual module in its own environment. Unexpected global reads/writes
-are rejected. Sixty-one tests pass, including 120 constructed projectile
-trajectories, math regressions, startup failure cleanup and resource release.
+are rejected. Eighty tests pass for each entry point, including 120 constructed
+projectile trajectories, UI-to-projectile speed/distance/drop checks, profile
+sync, dependency failure cleanup, math regressions and resource release.
 The Luau files compile with the official Luau 0.748 CLI.
-These are mock-engine tests, not a live Roblox/executor or visual test.
+The external CrispyLib release also compiles. UI tests use an interface double;
+these are not live Roblox/executor, weapon-accuracy or visual rendering tests.
 
 manifest.json is an inventory/hash snapshot of the supplied local files.
 It is informational and is not used to prevent you from editing modules.

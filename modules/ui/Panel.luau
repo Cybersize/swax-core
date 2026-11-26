@@ -1,177 +1,265 @@
--- ui/Panel: isolated factory; dependencies are explicit parameters.
-return function(ctx, ConfigService, Runtime, CharacterRegistry, Scheduler, LockController)
-    local UserInputService=ctx.services.UserInputService
-    local Workspace=ctx.services.Workspace
-    local LocalPlayer=ctx.localPlayer
-    -- Native, dependency-free controls. Right Shift hides the panel; End unloads.
+-- Original CrispyLib interface, wired only to the modular core.
+return function(ctx, ConfigService, Runtime, CharacterRegistry, Scheduler, LockController, VisualDebug)
     local CoreUI = {}
-    function CoreUI.Init()
-        local palette = {bg=Color3.fromRGB(19,22,27), row=Color3.fromRGB(28,32,39),
-            text=Color3.fromRGB(235,238,243), muted=Color3.fromRGB(156,166,182)}
-        local function create(class, props, parent)
-            local object = Instance.new(class)
-            for key, value in pairs(props) do object[key] = value end
-            object.Parent = parent
-            return object
-        end
-        local function corner(parent, radius)
-            create("UICorner", {CornerRadius=UDim.new(0,radius or 6)}, parent)
-        end
-        local gui = create("ScreenGui", {Name="SwaXCoreUI", ResetOnSpawn=false,
-            IgnoreGuiInset=true, ZIndexBehavior=Enum.ZIndexBehavior.Sibling, DisplayOrder=30}, LocalPlayer:WaitForChild("PlayerGui"))
-        ctx.maid:Give(gui)
-        Runtime.GUI = gui
-        local panel = create("Frame", {Name="Panel", Size=UDim2.fromOffset(390,520),
-            Position=UDim2.fromOffset(24,80), BackgroundColor3=palette.bg, BorderSizePixel=0}, gui)
-        corner(panel,10)
-        create("UIStroke", {Color=Color3.fromRGB(53,62,75),Thickness=1},panel)
-        local scale = create("UIScale", {Scale=1}, panel)
-        local function resize()
-            local camera = Workspace.CurrentCamera
-            if camera then scale.Scale=math.clamp(math.min(camera.ViewportSize.X/430,camera.ViewportSize.Y/580),0.4,1) end
-        end
-        resize()
-        local title = create("TextLabel", {Size=UDim2.new(1,-32,0,28), Position=UDim2.fromOffset(16,12),
-            BackgroundTransparency=1, Text="SwaX / CORE", TextColor3=palette.text,
-            Font=Enum.Font.GothamBold, TextSize=19, TextXAlignment=Enum.TextXAlignment.Left},panel)
-        create("TextLabel", {Size=UDim2.new(1,-32,0,20), Position=UDim2.fromOffset(16,42),
-            BackgroundTransparency=1, Text="Hold right-click to lock • Right Shift to hide", TextColor3=palette.muted,
-            Font=Enum.Font.Gotham, TextSize=12, TextXAlignment=Enum.TextXAlignment.Left},panel)
-        local tabs = create("Frame", {Size=UDim2.new(1,-32,0,32),Position=UDim2.fromOffset(16,72),BackgroundTransparency=1},panel)
-        local pages, buttons = {}, {}
-        local function button(parent, text, size, position)
-            local b=create("TextButton",{Size=size,Position=position,Text=text,TextSize=12,
-                Font=Enum.Font.GothamMedium,TextColor3=palette.text,BackgroundColor3=palette.row,
-                BorderSizePixel=0,AutoButtonColor=true},parent)
-            corner(b)
-            return b
-        end
-        for i,name in ipairs({"Aim","Visuals"}) do
-            local page=create("ScrollingFrame",{Name=name,Size=UDim2.new(1,-32,1,-175),Position=UDim2.fromOffset(16,114),
-                BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,CanvasSize=UDim2.new(),
-                AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollingDirection=Enum.ScrollingDirection.Y},panel)
-            create("UIListLayout",{Padding=UDim.new(0,6),SortOrder=Enum.SortOrder.LayoutOrder},page)
-            pages[name]=page
-            local b=button(tabs,name,UDim2.new(0.5,-4,1,0),UDim2.new((i-1)*0.5,(i-1)*4,0,0))
-            buttons[name]=b
-            ctx.maid:Give(b.Activated:Connect(function()
-                for key,p in pairs(pages) do p.Visible=key==name end
-                for key,t in pairs(buttons) do t.BackgroundColor3=key==name and ConfigService.Get("Accent") or palette.row end
-            end))
-            page.Visible=i==1
-        end
-        buttons.Aim.BackgroundColor3=ConfigService.Get("Accent")
-        local order=0
-        local function row(page,label)
-            order+=1
-            local r=create("Frame",{Size=UDim2.new(1,-7,0,36),BackgroundColor3=palette.row,BorderSizePixel=0,LayoutOrder=order},pages[page])
-            corner(r)
-            create("TextLabel",{Size=UDim2.new(1,-140,1,0),Position=UDim2.fromOffset(10,0),BackgroundTransparency=1,
-                Text=label,TextSize=12,Font=Enum.Font.Gotham,TextColor3=palette.text,TextXAlignment=Enum.TextXAlignment.Left,
-                TextTruncate=Enum.TextTruncate.AtEnd},r)
-            return r
-        end
-        local function watch(key,callback)
-            callback(ConfigService.Get(key))
-            ctx.maid:Give(ConfigService.OnChanged(key,callback))
-        end
-        local function toggle(page,label,key)
-            local r=row(page,label)
-            local b=button(r,"",UDim2.fromOffset(116,26),UDim2.new(1,-122,0,5))
-            watch(key,function(value)
-                b.Text=value and "ON" or "OFF"
-                b.TextColor3=value and ConfigService.Get("Accent") or palette.muted
-            end)
-            ctx.maid:Give(b.Activated:Connect(function() ConfigService.Set(key,not ConfigService.Get(key)) end))
-        end
-        local function number(page,label,key,step)
-            local r=row(page,label)
-            local down=button(r,"−",UDim2.fromOffset(24,26),UDim2.new(1,-122,0,5))
-            local field=create("TextBox",{Size=UDim2.fromOffset(62,26),Position=UDim2.new(1,-96,0,5),Text="",ClearTextOnFocus=false,
-                BackgroundColor3=palette.bg,TextColor3=palette.text,TextSize=12,Font=Enum.Font.Code,BorderSizePixel=0},r)
-            corner(field)
-            local up=button(r,"+",UDim2.fromOffset(24,26),UDim2.new(1,-32,0,5))
-            local function refresh(value) field.Text=string.format("%g",value) end
-            watch(key,refresh)
-            ctx.maid:Give(field.FocusLost:Connect(function()
-                local value=tonumber(field.Text)
-                if value then ConfigService.Set(key,value) end
-                refresh(ConfigService.Get(key))
-            end))
-            ctx.maid:Give(down.Activated:Connect(function() ConfigService.Set(key,ConfigService.Get(key)-step) end))
-            ctx.maid:Give(up.Activated:Connect(function() ConfigService.Set(key,ConfigService.Get(key)+step) end))
-        end
-        local function cycle(page,label,key)
-            local r=row(page,label)
-            local b=button(r,"",UDim2.fromOffset(116,26),UDim2.new(1,-122,0,5))
-            watch(key,function(value) b.Text=value end)
-            ctx.maid:Give(b.Activated:Connect(function()
-                local options=ConfigService.Options[key]
-                ConfigService.Set(key,options[((table.find(options,ConfigService.Get(key)) or 0)%#options)+1])
-            end))
-        end
-        for _,item in ipairs({{"Enabled","Enabled"},{"Players","LockOnPlayers"},{"NPCs","LockOnNPCs"},
-            {"Team check","TeamCheck"},{"Wall check","WallCheck"},{"Detailed wall checks","HighQualityVisibility"}}) do toggle("Aim",item[1],item[2]) end
-        cycle("Aim","Aim output","AimMode")
-        cycle("Aim","Target region","TargetPart")
-        toggle("Aim","Closest region","ClosestPart")
-        cycle("Aim","FOV origin","FOVMethod")
-        number("Aim","FOV radius","FOV",25)
-        number("Aim","Range (0 = unlimited)","LockRange",100)
-        number("Aim","Prediction (seconds)","Prediction",0.01)
-        number("Aim","Smooth X (%)","SmoothX",5)
-        number("Aim","Smooth Y (%)","SmoothY",5)
-        number("Aim","Hit chance (%)","HitChance",5)
-        number("Aim","Projectile speed (0 = off)","BallisticSpeed",100)
-        toggle("Aim","Projectile drop correction","DropCompensation")
-        for _,item in ipairs({{"FOV circle","ShowFOV"},{"Filled FOV","FOVFill"},{"Crosshair","Crosshair"},
-            {"Crosshair outline","CrosshairOutline"},{"Boxes","Box"},{"Names","Name"},{"Health bars","Health"},
-            {"Distance","Distance"},{"Tracers","Tracers"},{"Skeleton","Skeleton"},{"Accurate boxes","AccurateBoxes"},
-            {"Eight-corner boxes","ExactBoxes"},{"Chams","Chams"},{"Wall-only chams","ChamsWallOnly"}}) do toggle("Visuals",item[1],item[2]) end
-        cycle("Visuals","Crosshair style","CrosshairStyle")
-        number("Visuals","Crosshair size","CrosshairSize",1)
-        number("Visuals","Crosshair gap","CrosshairGap",1)
-        number("Visuals","Crosshair thickness","CrosshairThickness",1)
-        number("Visuals","Chams fill transparency","ChamsFillTransp",0.05)
-        number("Visuals","Chams outline transparency","ChamsOutlineTransp",0.05)
-        local status=create("TextLabel",{Size=UDim2.new(1,-32,0,19),Position=UDim2.new(0,16,1,-50),BackgroundTransparency=1,
-            Text="Ready",TextColor3=palette.muted,TextSize=11,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,
-            TextTruncate=Enum.TextTruncate.AtEnd},panel)
-        local reset=button(panel,"Reset",UDim2.fromOffset(72,22),UDim2.new(0,16,1,-27))
-        local close=button(panel,"Unload (End)",UDim2.fromOffset(116,22),UDim2.new(1,-132,1,-27))
-        ctx.maid:Give(reset.Activated:Connect(function()
-            for key,value in pairs(ConfigService.Defaults) do ConfigService.Set(key,value) end
-        end))
-        ctx.maid:Give(close.Activated:Connect(Runtime.Destroy))
-        Scheduler.Add("UI.Status",0.5,function()
-            local locked=LockController.GetLockedTarget()
-            status.Text=string.format("%d characters  /  %s",CharacterRegistry.Count(),locked and ("Locked: "..locked.name) or "Ready")
-            resize()
-        end)
-        ctx.maid:Give(UserInputService.InputBegan:Connect(function(input,processed)
-            if processed or UserInputService:GetFocusedTextBox() then return end
-            if input.KeyCode==Enum.KeyCode.RightShift then panel.Visible=not panel.Visible
-            elseif input.KeyCode==Enum.KeyCode.End then Runtime.Destroy() end
-        end))
-        -- Header dragging; only one global movement listener is owned by the app.
-        local dragging, origin, start
-        ctx.maid:Give(title.InputBegan:Connect(function(input)
-            if input.UserInputType==Enum.UserInputType.MouseButton1 then
-                dragging,origin,start=true,input.Position,panel.Position
-            end
-        end))
-        ctx.maid:Give(UserInputService.InputChanged:Connect(function(input)
-            if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
-                local delta=input.Position-origin
-                panel.Position=UDim2.new(start.X.Scale,start.X.Offset+delta.X,start.Y.Scale,start.Y.Offset+delta.Y)
-            end
-        end))
-        ctx.maid:Give(UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end
-        end))
-        ctx.maid:Give(gui.Destroying:Connect(Runtime.Destroy))
+    local RELEASE = "https://github.com/Cybersize/Crispylib/releases/download/v3.3.0/CrispyLib.lua"
+
+    local function compatible(library)
+        return type(library) == "table"
+            and type(library.CreateWindow) == "function"
+            and type(library.CreateLoadingScreen) == "function"
+            and type(library.State) == "table" and type(library.State.Get) == "function"
+            and type(library.Config) == "table" and type(library.Config.OnApplied) == "function"
+            and type(library.Config.CreateProfileUI) == "function"
     end
 
+    local function resolveLibrary()
+        local environment = _G
+        if type(getgenv) == "function" then
+            local ok, value = pcall(getgenv)
+            if ok and type(value) == "table" then environment = value end
+        end
+        for _, candidate in ipairs({environment, _G}) do
+            local library = rawget(candidate, "CrispyLib")
+            if compatible(library) then return library end
+        end
+        local errors = {}
+        local function attempt(label, read)
+            local ok, result = pcall(function()
+                local source = read()
+                assert(type(source) == "string" and #source > 0, "empty library source")
+                local chunk, compileError = loadstring(source, "@" .. label)
+                assert(chunk, compileError)
+                local library = chunk()
+                assert(compatible(library), "CrispyLib 3.3-compatible config API required")
+                return library
+            end)
+            if ok then return result end
+            errors[#errors + 1] = label .. ": " .. tostring(result)
+            return nil
+        end
+        local library = attempt(RELEASE, function() return game:HttpGet(RELEASE) end)
+        if library then return library end
+        if type(readfile) == "function" then
+            local paths = {"CrispyLib.lua", "CrispyLib.refactored.lua"}
+            local configured = rawget(environment, "CRISPYLIB_PATH")
+            if type(configured) == "string" and configured ~= "" then table.insert(paths, 1, configured) end
+            for _, path in ipairs(paths) do
+                library = attempt(path, function() return readfile(path) end)
+                if library then return library end
+            end
+        end
+        error("[SwaX Core] Original UI could not load. No headless instance was started.\n"
+            .. table.concat(errors, "\n"), 0)
+    end
+
+    function CoreUI.Init()
+        local CrispyLib = resolveLibrary()
+        assert(ctx.alive, "SwaX Core was unloaded while loading the UI")
+        local loader = CrispyLib.CreateLoadingScreen({Title="SwaX", Subtitle="v7.0 — Modular Refactor"})
+        ctx.maid:Give(loader)
+        Runtime.Loader = loader
+        loader:SetStatus("Preparing core controls...")
+        loader:SetProgress(0.5)
+
+        local window = CrispyLib:CreateWindow({
+            Title="SwaX", Subtitle="v7.0 — Universal", ConfigName="SwaXCore",
+            AutoLoad=false, -- Load after every control and the OnApplied observer exist.
+            Size=UDim2.new(0,820,0,545), DragStyle=1,
+            Keybind=Enum.KeyCode.RightShift, ShowUserInfo=true,
+        })
+        ctx.maid:Give(window)
+        Runtime.Window = window
+        Runtime.GUI = window._screenGui or window._sg
+        if Runtime.GUI then ctx.maid:Give(Runtime.GUI.Destroying:Connect(Runtime.Destroy)) end
+
+        local bindings = {}
+        local function bind(tab, kind, name, key, flag, options)
+            local spec = options or {}
+            spec.Name, spec.Flag, spec.Default = name, flag, ConfigService.Get(key)
+            spec.Callback = function(value) ConfigService.Set(key, value) end
+            local control = tab["Add" .. kind](tab, spec)
+            bindings[#bindings + 1] = {key=key, flag=flag}
+            ctx.maid:Give(ConfigService.OnChanged(key, function(value) control:Set(value, true) end))
+            return control
+        end
+        local function toggle(tab, name, key, flag, description)
+            return bind(tab, "Toggle", name, key, flag, {Description=description})
+        end
+        local function slider(tab, name, key, flag, step)
+            local range = assert(ConfigService.Ranges[key], key)
+            return bind(tab, "Slider", name, key, flag, {Min=range[1], Max=range[2], Step=step or 1})
+        end
+        local function dropdown(tab, name, key, flag)
+            return bind(tab, "Dropdown", name, key, flag, {Options=ConfigService.Options[key]})
+        end
+
+        -- Same sidebar, tabs, sections and controls as the original interface.
+        window:AddSidebarSection("Combat")
+        local aim = window:AddTab({Name="Aimbot", Icon="🎯"})
+        aim:AddSection({Title="Lock-On", Description="Hold right-click to activate."})
+        toggle(aim, "Enabled", "Enabled", "a_en")
+        toggle(aim, "Lock Players", "LockOnPlayers", "a_plr")
+        toggle(aim, "Lock NPCs", "LockOnNPCs", "a_npc")
+        toggle(aim, "Team Check", "TeamCheck", "a_team")
+        toggle(aim, "Wall Check", "WallCheck", "a_wall")
+        toggle(aim, "High-Quality Visibility", "HighQualityVisibility", "a_wallhq",
+            "Uses extra rays per sampled character. Higher CPU cost.")
+        aim:AddDivider({Label="Targeting"})
+        local partOptions = table.clone(ConfigService.Options.TargetPart)
+        partOptions[#partOptions + 1] = "ClosestPart"
+        local partControl = aim:AddDropdown({Name="Target Part", Options=partOptions, Flag="a_part",
+            Default=ConfigService.Get("ClosestPart") and "ClosestPart" or ConfigService.Get("TargetPart"),
+            Callback=function(value)
+                if value == "ClosestPart" then ConfigService.Set("ClosestPart", true)
+                elseif ConfigService.Set("TargetPart", value) then ConfigService.Set("ClosestPart", false) end
+            end})
+        local function refreshPart()
+            partControl:Set(ConfigService.Get("ClosestPart") and "ClosestPart" or ConfigService.Get("TargetPart"), true)
+        end
+        ctx.maid:Give(ConfigService.OnChanged("TargetPart", refreshPart))
+        ctx.maid:Give(ConfigService.OnChanged("ClosestPart", refreshPart))
+        dropdown(aim, "FOV Method", "FOVMethod", "a_fmet")
+        slider(aim, "FOV (px)", "FOV", "a_fov")
+        slider(aim, "Range (0=∞)", "LockRange", "a_rng")
+        slider(aim, "Extra Lead Time (s)", "Prediction", "a_pred", 0.01)
+
+        aim:AddDivider({Label="Ballistic / Projectile"})
+        toggle(aim, "Drop Compensation", "DropCompensation", "a_drop")
+        local function projectileSpeed(value)
+            if type(value) ~= "number" or value ~= value or math.abs(value) == math.huge then return 500 end
+            return math.clamp(value, 1, ConfigService.Ranges.BallisticSpeed[2])
+        end
+        local function applyProjectile(enabled, speed)
+            ConfigService.Set("BallisticSpeed", enabled == true and projectileSpeed(speed) or 0)
+        end
+        local projectileToggle = aim:AddToggle({Name="Projectile Mode", Flag="a_balena",
+            Description="Solves distance, target velocity and projectile travel time. Off = no speed-based lead.",
+            Default=ConfigService.Get("BallisticSpeed") > 0,
+            Callback=function(value) applyProjectile(value, CrispyLib.State.Get("a_bspd")) end})
+        local speedControl = aim:AddSlider({Name="Projectile Speed (st/s)", Flag="a_bspd",
+            Description="Actual weapon speed in studs/second; not auto-detected. Drop uses Workspace.Gravity.",
+            Min=1, Max=ConfigService.Ranges.BallisticSpeed[2], Step=1,
+            Default=ConfigService.Get("BallisticSpeed") > 0 and ConfigService.Get("BallisticSpeed") or 500,
+            Callback=function(value) applyProjectile(CrispyLib.State.Get("a_balena"), value) end})
+        speedControl:DependsOn(projectileToggle)
+        ctx.maid:Give(ConfigService.OnChanged("BallisticSpeed", function(value)
+            projectileToggle:Set(value > 0, true)
+            if value > 0 then speedControl:Set(value, true) end
+        end))
+        aim:AddDivider({Label="Aim Settings"})
+        dropdown(aim, "Aim Mode", "AimMode", "a_aimmode")
+        slider(aim, "Smooth X", "SmoothX", "a_sx")
+        slider(aim, "Smooth Y", "SmoothY", "a_sy")
+        slider(aim, "Hit Chance %", "HitChance", "a_hc")
+
+        local fov = window:AddTab({Name="FOV", Icon="⭕"})
+        fov:AddSection({Title="FOV Circle"})
+        toggle(fov, "Show", "ShowFOV", "f_show")
+        toggle(fov, "Fill", "FOVFill", "f_fill")
+        bind(fov, "ColorPicker", "Global Accent / ESP Color", "Accent", "ui_accent")
+        local function applyAccent(color)
+            window:SetAccent(color)
+            local circle = VisualDebug.GetFOVCircle()
+            if circle then circle.Color = color end
+        end
+        ctx.maid:Give(ConfigService.OnChanged("Accent", applyAccent))
+        fov:AddSection({Title="Crosshair"})
+        toggle(fov, "Crosshair", "Crosshair", "xh_on")
+        dropdown(fov, "Style", "CrosshairStyle", "xh_sty")
+        slider(fov, "Size", "CrosshairSize", "xh_sz")
+        slider(fov, "Gap", "CrosshairGap", "xh_gap")
+        slider(fov, "Thickness", "CrosshairThickness", "xh_thk")
+        bind(fov, "ColorPicker", "Crosshair Color", "CrosshairColor", "xh_col")
+        toggle(fov, "Outline", "CrosshairOutline", "xh_out")
+
+        window:AddSidebarSection("Visuals")
+        local esp = window:AddTab({Name="ESP", Icon="👁"})
+        esp:AddSection({Title="ESP Options"})
+        toggle(esp, "Boxes", "Box", "e_box")
+        toggle(esp, "Names", "Name", "e_name")
+        toggle(esp, "Health Bars", "Health", "e_hp")
+        toggle(esp, "Tracers", "Tracers", "e_trc")
+        toggle(esp, "Distance", "Distance", "e_dist")
+        toggle(esp, "Skeleton", "Skeleton", "e_skel")
+        toggle(esp, "Accurate Boxes", "AccurateBoxes", "e_accbox")
+        toggle(esp, "Exact Eight-Corner Boxes", "ExactBoxes", "e_exactbox")
+        esp:AddDivider({Label="Chams"})
+        toggle(esp, "Chams", "Chams", "e_chams")
+        toggle(esp, "Wall-Only Chams", "ChamsWallOnly", "e_chamswall")
+        bind(esp, "ColorPicker", "Chams Fill Color", "ChamsColor", "e_chamsclr")
+        bind(esp, "ColorPicker", "Chams Outline Color", "ChamsOutline", "e_chamsout")
+        slider(esp, "Fill Transparency", "ChamsFillTransp", "e_chamsfill", 0.05)
+        slider(esp, "Outline Transparency", "ChamsOutlineTransp", "e_chamsouttr", 0.05)
+        local characterCard = esp:AddDataCard({Name="Registered Characters", Value=tostring(CharacterRegistry.Count())})
+        Scheduler.Add("UI.Status", 1, function() characterCard:Set(tostring(CharacterRegistry.Count())) end)
+
+        window:AddSidebarSection("Settings")
+        local config = window:AddTab({Name="Config", Icon="💾"})
+        config:AddSection({Title="Profiles"})
+        CrispyLib.Config.CreateProfileUI(config)
+        local function configAction(action)
+            local ok, err = CrispyLib.Config[action]()
+            if not ok and err ~= "config does not exist" then
+                warn("[SwaX Core] Config " .. action .. ": " .. tostring(err))
+            end
+            return ok
+        end
+        config:AddDivider()
+        config:AddButton({Name="Save", Callback=function() configAction("Save") end})
+        config:AddButton({Name="Load", Callback=function() configAction("Load") end})
+        config:AddButton({Name="Reset Core Settings", Callback=function()
+            for key, value in pairs(ConfigService.Defaults) do ConfigService.Set(key, value, true) end
+        end})
+        config:AddDivider({Label="Script"})
+        config:AddButton({Name="Force Rescan", Callback=CharacterRegistry.ForceRescan})
+        config:AddButton({Name="Print Lock Log", Callback=LockController.PrintLog})
+        config:AddButton({Name="Destroy Script", Description="Stops the core and cleans all owned resources. (End)",
+            Callback=Runtime.Destroy})
+
+        -- Capture the complete flag snapshot first: two composite controls share
+        -- a runtime setting, and their silent refreshes also update Crispy state.
+        function CoreUI.SyncSettings()
+            if not ctx.alive then return end
+            local values = {}
+            for _, binding in ipairs(bindings) do values[binding.key] = CrispyLib.State.Get(binding.flag) end
+            local part = CrispyLib.State.Get("a_part")
+            local ballistic, speed = CrispyLib.State.Get("a_balena"), CrispyLib.State.Get("a_bspd")
+            for _, binding in ipairs(bindings) do
+                local value = values[binding.key]
+                if value ~= nil then ConfigService.Set(binding.key, value, true) end
+            end
+            if part == "ClosestPart" then ConfigService.Set("ClosestPart", true, true)
+            elseif part ~= nil and ConfigService.Set("TargetPart", part, true) then
+                ConfigService.Set("ClosestPart", false, true)
+            end
+            applyProjectile(ballistic, speed)
+            applyAccent(ConfigService.Get("Accent"))
+        end
+        -- Current library API covers Load, Apply, Import and profile switching,
+        -- including loads with feature callbacks disabled; no method patches.
+        ctx.maid:Give(CrispyLib.Config.OnApplied(CoreUI.SyncSettings))
+        configAction("Load")
+        assert(ctx.alive, "SwaX Core was unloaded while loading its config")
+        CoreUI.SyncSettings()
+        if type(CrispyLib.Config.AutoSave) == "function" then
+            local token = CrispyLib.Config.AutoSave(30)
+            if token then ctx.maid:Give(function()
+                if CrispyLib.Config._autoSaveToken == token then CrispyLib.Config.StopAutoSave()
+                elseif CrispyLib.Tasks and type(CrispyLib.Tasks.Cancel) == "function" then CrispyLib.Tasks:Cancel(token) end
+            end) end
+        end
+        if CrispyLib.System and type(CrispyLib.System.StatsBar) == "function" and not CrispyLib.System._statsHandle then
+            ctx.maid:Give(CrispyLib.System.StatsBar({FPS=true, Ping=true}))
+        end
+        ctx.maid:Give(ctx.services.UserInputService.InputBegan:Connect(function(input, processed)
+            if not processed and not ctx.services.UserInputService:GetFocusedTextBox()
+                and input.KeyCode == Enum.KeyCode.End then Runtime.Destroy() end
+        end))
+        loader:SetStatus("Core ready — hold right-click to lock")
+        loader:SetProgress(1)
+        loader:Finish()
+        Runtime.Loader = nil
+    end
 
     return CoreUI
 end
